@@ -1,15 +1,17 @@
 'use strict';
 
-var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, render: render, update: update });
+var game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, render: render, update: update });
 
 
 // Global variables
 var spaceShip,
     bullets,
+    bullet,
     enemy,
     enemys,
     weapon,
     fire,
+    bulletTime = 0,
     fireButton,
     keyPressed = [],
     keyDown = [];
@@ -32,17 +34,10 @@ function preload() {
 function create() {
      
     createShip();
-    createEnemy();
+    createEnemy(); 
     createListeners();    
     keyboardInput();
-    guns();
-    // for(var i = 1; i <= 10; i++){
-        
-    //     var c = enemy.create(game.world.randomX,       
-    //     Math.random()*500,'enemies',game.rnd.integerInRange(1,31));
-    //     c.name = "enem" + i;   
-        
-    //     }
+    shoot();
 }
     
     
@@ -64,15 +59,24 @@ function create() {
         enemy.body.collideWorldBounds = true;
     }
     
-    function guns(){
-        weapon = game.add.weapon(20, 'bullet')
-        weapon.bulletSpeed = 450;
-        weapon.fireRate = 200; 
-        weapon.trackSprite(spaceShip, 175, 95, true);
-        // weapon.bulletSpeedVariance = 200; 
-        fireButton = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);  
+    function shoot(){
+        bullets = game.add.group();
+        bullets.enableBody = true;
+        bullets.physicsBodyType = Phaser.Physics.ARCADE;
+        
+        for( var i = 0; i < 20;i++){
+        var b = bullets.create(0,0, 'bullet');
+        b.name = 'bullet' + i;
+        b.exists = false;
+        b.visible = false;
+        b.checkWorldBounds = true;
+        b.events.onOutOfBounds.add(resetBullet, this);
+        }
     }
     
+    
+
+
     
     function createListeners(){
         document.addEventListener('keydown', function (e) {
@@ -103,10 +107,43 @@ function render() {
 }
 
 function update(){
-     if(fireButton.isDown) {
-        weapon.fire();
-     }
+    //  if(fireButton.isDown) {
+    //     weapon.fire();
+    //  }
+    
+    if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+    {
+        fireBullet();
+    }
  
+
+
+
+
+
+}
+
+function fireBullet () {
+
+    if (game.time.now > bulletTime)
+    {
+        bullet = bullets.getFirstExists(false);
+
+        if (bullet)
+        {
+            bullet.reset(spaceShip.x + 150, spaceShip.y + 80);
+            bullet.body.velocity.x = 300;
+            bulletTime = game.time.now + 150;
+        }
+    }
+
+}
+function resetBullet (bullet){
+    bullets.kill
+}
+function collideHandler(bullets, enemy){
+    bullets.kill();
+    enemy.kill();
 }
 function killEnemy(){
   
